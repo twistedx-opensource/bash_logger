@@ -28,12 +28,12 @@ SCRIPT_FILENAME=$(basename ${0})
 SCRIPT_FRIENDLY_NAME=${SCRIPT_FILENAME%.*}
 
 case $(uname -s | tr '[:upper:]' '[:lower:]') in
-  darwin)
-    DATE_CMD='gdate'
-    ;;
-  *)
-    DATE_CMD='date'
-    ;;
+	darwin)
+		DATE_CMD='gdate'
+		;;
+	*)
+		DATE_CMD='date'
+		;;
 esac
 
 BASH_LOGGER_EMERG_LOGFILE="/dev/null"
