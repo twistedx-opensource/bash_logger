@@ -119,7 +119,7 @@ function _log() {
 	TIMESTAMP="$(${DATE_CMD} "+%Y-%m-%dT%H:%M:%S.%3N%z")"
 	SOURCE="$(realpath ${BASH_SOURCE[2]} | sed "s|^${SCRIPT_DIRNAME}||g" | sed "s|^/||g"):${BASH_LINENO[1]}"
 
-	if [ $(command -v jq | wc -l) -gt 0 ]; then
+	if [ $(command -v jq | wc -l) -rq 0 ]; then
 		JSON_MESSAGE=$(echo "${MESSAGE} "| sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
 		JSON_STRING="{ \"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\" }"
 	else
