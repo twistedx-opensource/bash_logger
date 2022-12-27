@@ -38,4 +38,4 @@ log2stdout
 log_error "I have a problem with you"
 log_info "Here I am"
 log_debug "This is my debug"
-log_notice "The contents of test.sh\n$(cat ${0})"
+log_notice "The contents of ${0}: $(cat ${0})"

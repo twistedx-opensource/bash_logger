@@ -29,7 +29,11 @@ SCRIPT_FRIENDLY_NAME=${SCRIPT_FILENAME%.*}
 
 case $(uname -s | tr '[:upper:]' '[:lower:]') in
 	darwin)
-		DATE_CMD='gdate'
+		if [ $(command -v gdate | wc -l) -gt 0 ]; then
+			DATE_CMD='gdate'
+		else
+			DATE_CMD='date'
+		fi
 		;;
 	*)
 		DATE_CMD='date'
@@ -98,7 +102,7 @@ function _log() {
 	SOURCE="$(realpath ${BASH_SOURCE[2]} | sed "s|^${SCRIPT_DIRNAME}||g" | sed "s|^/||g"):${BASH_LINENO[1]}"
 
 	if [ $(command -v jq | wc -l) -gt 0 ]; then
-		JSON_MESSAGE=$(echo "${MESSAGE} "| sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g')
+		JSON_MESSAGE=$(echo "${MESSAGE} "| sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
 		JSON_STRING="{ \"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\" }"
 	else
 		JSON_STRING=$(jq -n \
@@ -141,7 +145,7 @@ function _log() {
 	esac
 
 	if [ ! -z "${LOG_TO_STDOUT}" ]; then
-		printf "%-8s%s\n" "${2}" "${MESSAGE}"
+		printf "%-8s%s\n" "${LEVEL}" "${MESSAGE}"
 	fi
 }
 
