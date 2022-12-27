@@ -40,6 +40,8 @@ case $(uname -s | tr '[:upper:]' '[:lower:]') in
 		;;
 esac
 
+
+
 BASH_LOGGER_EMERG_LOGFILE="/dev/null"
 BASH_LOGGER_ALERT_LOGFILE="/dev/null"
 BASH_LOGGER_CRIT_LOGFILE="/dev/null"
@@ -58,6 +60,18 @@ SeverityLevel[warning]="WARN"
 SeverityLevel[notice]="NOTICE"
 SeverityLevel[informational]="INFO"
 SeverityLevel[debug]="DEBUG"
+
+declare -A SeverityIndex
+SeverityIndex[EMERG]=8
+SeverityIndex[ALERT]=7
+SeverityIndex[CRIT]=6
+SeverityIndex[ERROR]=5
+SeverityIndex[WARN]=4
+SeverityIndex[NOTICE]=3
+SeverityIndex[INFO]=2
+SeverityIndex[DEBUG]=1
+
+LOG_TO_STDOUT_SEVERITY="${SeverityLevel[informational]}"
 
 function set_emergency_logfile() {
 	BASH_LOGGER_EMERG_LOGFILE="${1}"
@@ -93,6 +107,10 @@ function set_debug_logfile() {
 
 function log2stdout() {
 	LOG_TO_STDOUT=1
+
+	if [ ! -z "${1}" ]; then
+		LOG_TO_STDOUT_SEVERITY="${1}"
+	fi
 } 
 
 function _log() {
@@ -145,7 +163,9 @@ function _log() {
 	esac
 
 	if [ ! -z "${LOG_TO_STDOUT}" ]; then
-		printf "%-8s%s\n" "${LEVEL}" "${MESSAGE}"
+		if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
+			printf "%-8s%s\n" "${LEVEL}" "${MESSAGE}"
+		fi
 	fi
 }
 
