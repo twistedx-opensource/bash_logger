@@ -115,7 +115,11 @@ function _log() {
 	LEVEL="${1}"
 	MESSAGE="${2}"
 	TIMESTAMP="$(${DATE_CMD} "+%Y-%m-%dT%H:%M:%S.%3N%z")"
-	SOURCE="$(realpath ${BASH_SOURCE[2]} | sed "s|^${SCRIPT_DIRNAME}||g" | sed "s|^/||g"):${BASH_LINENO[1]}"
+	SOURCE="$(realpath ${BASH_SOURCE[2]}):${BASH_LINENO[1]}"
+
+	if [ $(echo ${SOURCE} | grep -c "^${SCRIPT_DIRNAME}") -gt 0 ]; then
+		SOURCE="$(realpath ${BASH_SOURCE[2]} | sed "s|^${SCRIPT_DIRNAME}||g" | sed "s|^/||g"):${BASH_LINENO[1]}"
+	fi
 
 	if [ $(command -v jq | wc -l) -eq 0 ]; then
 		JSON_MESSAGE=$(echo "${MESSAGE} "| sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
