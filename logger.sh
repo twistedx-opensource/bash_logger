@@ -40,8 +40,6 @@ case $(uname -s | tr '[:upper:]' '[:lower:]') in
 		;;
 esac
 
-
-
 BASH_LOGGER_EMERG_LOGFILE="/dev/null"
 BASH_LOGGER_ALERT_LOGFILE="/dev/null"
 BASH_LOGGER_CRIT_LOGFILE="/dev/null"
@@ -62,14 +60,14 @@ SeverityLevel[informational]="INFO"
 SeverityLevel[debug]="DEBUG"
 
 declare -A SeverityIndex
-SeverityIndex[EMERG]=8
-SeverityIndex[ALERT]=7
-SeverityIndex[CRIT]=6
-SeverityIndex[ERROR]=5
-SeverityIndex[WARN]=4
-SeverityIndex[NOTICE]=3
-SeverityIndex[INFO]=2
-SeverityIndex[DEBUG]=1
+SeverityIndex[${SeverityLevel[emergency]}]=8
+SeverityIndex[${SeverityLevel[alert]}]=7
+SeverityIndex[${SeverityLevel[critical]}]=6
+SeverityIndex[${SeverityLevel[error]}]=5
+SeverityIndex[${SeverityLevel[warning]}]=4
+SeverityIndex[${SeverityLevel[notice]}]=3
+SeverityIndex[${SeverityLevel[informational]}]=2
+SeverityIndex[${SeverityLevel[debug]}]=1
 
 LOG_TO_STDOUT_SEVERITY="${SeverityLevel[informational]}"
 
