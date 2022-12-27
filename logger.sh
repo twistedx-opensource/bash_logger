@@ -121,9 +121,9 @@ function _log() {
 
 	if [ $(command -v jq | wc -l) -eq 0 ]; then
 		JSON_MESSAGE=$(echo "${MESSAGE} "| sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
-		JSON_STRING="{ \"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\" }"
+		JSON_STRING="{\"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
 	else
-		JSON_STRING=$(jq -n \
+		JSON_STRING=$(jq -cn \
 			--arg level "${LEVEL}" \
 			--arg message "${MESSAGE}" \
 			--arg timestamp "${TIMESTAMP}" \
