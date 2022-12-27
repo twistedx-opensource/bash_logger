@@ -29,13 +29,53 @@ SCRIPT_FRIENDLY_NAME=${SCRIPT_FILENAME%.*}
 
 source ${SCRIPT_DIRNAME}/logger.sh
 
-set_error_logfile "${SCRIPT_DIRNAME}/test.error.log"
-set_info_logfile "${SCRIPT_DIRNAME}/test.info.log"
-set_debug_logfile "${SCRIPT_DIRNAME}/test.debug.log"
+function set_global_log() {
+	set_error_logfile "${SCRIPT_DIRNAME}/global.error.log"
+	set_info_logfile "${SCRIPT_DIRNAME}/global.info.log"
+	set_debug_logfile "${SCRIPT_DIRNAME}/global.debug.log"
 
-log2stdout "INFO"
+	log2stdout "INFO"
+}
 
-log_error "I have a problem with you"
-log_info "Here I am"
-log_debug "This is my debug"
-log_debug "The contents of ${0}: $(cat ${0})"
+function set_ui_log() {
+	set_error_logfile "${SCRIPT_DIRNAME}/ui.error.log"
+	set_info_logfile "${SCRIPT_DIRNAME}/ui.info.log"
+	set_debug_logfile "${SCRIPT_DIRNAME}/ui.debug.log"
+
+	log2stdout "INFO"
+}
+
+function log_global_info() {
+	set_global_log
+	log_info "${1}"
+}
+
+function log_global_error() {
+	set_global_log
+	log_error "${1}"
+}
+
+function log_global_debug() {
+	set_global_log
+	log_debug "${1}"
+}
+
+function log_ui_info() {
+	set_ui_log
+	log_info "${1}"
+}
+
+function log_ui_error() {
+	set_ui_log
+	log_error "${1}"
+}
+
+function log_ui_debug() {
+	set_ui_log
+	log_debug "${1}"
+}
+
+log_global_error "I have a problem with you"
+log_global_info "Here I am"
+log_ui_debug "This is my debug"
+log_ui_debug "The contents of ${0}: $(cat ${0})"

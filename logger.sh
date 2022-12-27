@@ -115,10 +115,10 @@ function _log() {
 	LEVEL="${1}"
 	MESSAGE="${2}"
 	TIMESTAMP="$(${DATE_CMD} "+%Y-%m-%dT%H:%M:%S.%3N%z")"
-	SOURCE="$(realpath ${BASH_SOURCE[2]}):${BASH_LINENO[1]}"
+	SOURCE="$(realpath ${BASH_SOURCE[-1]}):${BASH_LINENO[-2]}"
 
 	if [ $(echo ${SOURCE} | grep -c "^${SCRIPT_DIRNAME}") -gt 0 ]; then
-		SOURCE="$(realpath ${BASH_SOURCE[2]} | sed "s|^${SCRIPT_DIRNAME}||g" | sed "s|^/||g"):${BASH_LINENO[1]}"
+		SOURCE="$(echo ${SOURCE} | sed "s|^${SCRIPT_DIRNAME}||g" | sed "s|^/||g")"
 	fi
 
 	if [ $(command -v jq | wc -l) -eq 0 ]; then
