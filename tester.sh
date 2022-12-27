@@ -33,7 +33,7 @@ set_error_logfile "${SCRIPT_DIRNAME}/test.error.log"
 set_info_logfile "${SCRIPT_DIRNAME}/test.info.log"
 set_debug_logfile "${SCRIPT_DIRNAME}/test.debug.log"
 
-log2stdout
+log2stdout "INFO"
 
 log_error "I have a problem with you"
 log_info "Here I am"
