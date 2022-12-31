@@ -100,7 +100,7 @@ function bash_logger_set_info_logfile() {
 }
 
 function bash_logger_set_debug_logfile() {
-	BASH_LOGGER_DEBUG_LOGFILE="${1}"
+	export BASH_LOGGER_DEBUG_LOGFILE="${1}"
 }
 
 function bash_logger_set_base_dir() {
