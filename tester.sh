@@ -27,6 +27,8 @@ SCRIPT_DIRNAME=$(dirname ${SCRIPT_FULL_PATH})
 SCRIPT_FILENAME=$(basename ${0})
 SCRIPT_FRIENDLY_NAME=${SCRIPT_FILENAME%.*}
 
+VERSION="0.1.0"
+
 source ${SCRIPT_DIRNAME}/logger.sh
 
 function set_global_log() {
@@ -34,7 +36,9 @@ function set_global_log() {
 	set_info_logfile "${SCRIPT_DIRNAME}/global.info.log"
 	set_debug_logfile "${SCRIPT_DIRNAME}/global.debug.log"
 
-	log2stdout "INFO"
+	BASH_LOGGER_BASE_DIR="/Users/jason"
+
+	log2stdout "DEBUG"
 }
 
 function set_ui_log() {
@@ -42,40 +46,44 @@ function set_ui_log() {
 	set_info_logfile "${SCRIPT_DIRNAME}/ui.info.log"
 	set_debug_logfile "${SCRIPT_DIRNAME}/ui.debug.log"
 
+	BASH_LOGGER_BASE_DIR="/Users/jason/Projects/bash_logger"
+
 	log2stdout "INFO"
 }
 
 function log_global_info() {
 	set_global_log
-	log_info "${1}"
+	log_info "${@}"
 }
 
 function log_global_error() {
 	set_global_log
-	log_error "${1}"
+	log_error "${@}"
 }
 
 function log_global_debug() {
 	set_global_log
-	log_debug "${1}"
+	log_debug "${@}"
 }
 
 function log_ui_info() {
 	set_ui_log
-	log_info "${1}"
+	log_info "${@}"
 }
 
 function log_ui_error() {
 	set_ui_log
-	log_error "${1}"
+	log_error "${@}"
 }
 
 function log_ui_debug() {
 	set_ui_log
-	log_debug "${1}"
+	log_debug "${@}"
 }
 
-log_global_error "I have a problem with you"
+log_global_debug "Enetering filewatcher"
+log_global_error "Unable to load gc"
+log_global_debug "Exiting filewatcher" -s "fakesource.sh" -l 202
 log_global_info "Here I am"
 log_ui_debug "This is my debug"
 log_ui_debug "The contents of ${0}: $(cat ${0})"

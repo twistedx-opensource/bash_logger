@@ -103,6 +103,10 @@ function set_debug_logfile() {
 	BASH_LOGGER_DEBUG_LOGFILE="${1}"
 }
 
+function set_base_dir() {
+	BASH_LOGGER_BASE_DIR="${1}"
+}
+
 function log2stdout() {
 	LOG_TO_STDOUT=1
 
@@ -114,23 +118,76 @@ function log2stdout() {
 function _log() {
 	LEVEL="${1}"
 	MESSAGE="${2}"
-	TIMESTAMP="$(${DATE_CMD} "+%Y-%m-%dT%H:%M:%S.%3N%z")"
-	SOURCE="$(realpath ${BASH_SOURCE[-1]}):${BASH_LINENO[-2]}"
 
-	if [ $(echo ${SOURCE} | grep -c "^${SCRIPT_DIRNAME}") -gt 0 ]; then
-		SOURCE="$(echo ${SOURCE} | sed "s|^${SCRIPT_DIRNAME}||g" | sed "s|^/||g")"
+	shift
+	shift
+
+	unset LINE_NUMBER
+
+	while [[ ${#} -gt "0" ]]; do
+		KEY="${1}"
+
+		case "${KEY}" in 
+			-s | --source)
+				LOG_SOURCE="${2}"
+				shift
+				shift;;
+
+			-l | --line-number)
+				LOG_LINE_NUMBER="${2}"
+				shift
+				shift;;
+			*)
+				echo "Fatal error, log command not recognized"
+				exit 1;;
+		esac
+	done
+
+	if [ -z "${BASH_LOGGER_BASE_DIR}" ]; then
+		BASH_LOGGER_BASE_DIR="${SCRIPT_DIRNAME}"
+	fi
+
+	if [ -z "${LOG_SOURCE}" ]; then
+		LOG_SOURCE=$(realpath ${BASH_SOURCE[-1]})
+	fi
+
+	if [ -z "${LOG_LINE_NUMBER}" ]; then
+		LOG_LINE_NUMBER=${BASH_LINENO[-2]}
+	fi
+
+
+	TIMESTAMP="$(${DATE_CMD} "+%Y-%m-%dT%H:%M:%S.%3N%z")"
+	SOURCE="${LOG_SOURCE}:${LOG_LINE_NUMBER}"
+
+	if [ $(echo ${SOURCE} | grep -c "^${BASH_LOGGER_BASE_DIR}") -gt 0 ]; then
+		SOURCE="$(echo ${SOURCE} | sed "s|^${BASH_LOGGER_BASE_DIR}||g" | sed "s|^/||g")"
 	fi
 
 	if [ $(command -v jq | wc -l) -eq 0 ]; then
 		JSON_MESSAGE=$(echo "${MESSAGE} "| sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
-		JSON_STRING="{\"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
+
+		if [ ! -z "${VERSION}" ]; then
+			JSON_STRING="{\"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"version\": \"${VERSION}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
+		else
+			JSON_STRING="{\"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
+		fi
 	else
-		JSON_STRING=$(jq -cn \
-			--arg level "${LEVEL}" \
-			--arg message "${MESSAGE}" \
-			--arg timestamp "${TIMESTAMP}" \
-			--arg source "${SOURCE}" \
-			'{level: $level, message: $message, timestamp: $timestamp, source: $source}')
+		if [ ! -z "${VERSION}" ]; then
+			JSON_STRING=$(jq -cn \
+				--arg level "${LEVEL}" \
+				--arg message "${MESSAGE}" \
+				--arg version "${VERSION}" \
+				--arg timestamp "${TIMESTAMP}" \
+				--arg source "${SOURCE}" \
+				'{level: $level, message: $message, version: $version, timestamp: $timestamp, source: $source}')
+		else
+			JSON_STRING=$(jq -cn \
+				--arg level "${LEVEL}" \
+				--arg message "${MESSAGE}" \
+				--arg timestamp "${TIMESTAMP}" \
+				--arg source "${SOURCE}" \
+				'{level: $level, message: $message, timestamp: $timestamp, source: $source}')
+		fi
 	fi
 
 	case "${LEVEL}" in
@@ -166,39 +223,39 @@ function _log() {
 
 	if [ ! -z "${LOG_TO_STDOUT}" ]; then
 		if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
-			printf "%-8s%s\n" "${LEVEL}" "${MESSAGE}"
+			printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "${MESSAGE}"
 		fi
 	fi
 }
 
 function log_emergency() {
-	_log "${SeverityLevel[emergency]}" "${1}"
+	_log "${SeverityLevel[emergency]}" "${@}"
 }
 
 function log_alert() {
-	_log "${SeverityLevel[alert]}" "${1}"
+	_log "${SeverityLevel[alert]}" "${@}"
 }
 
 function log_critical() {
-	_log "${SeverityLevel[critical]}" "${1}"
+	_log "${SeverityLevel[critical]}" "${@}"
 }
 
 function log_error() {
-	_log "${SeverityLevel[error]}" "${1}"
+	_log "${SeverityLevel[error]}" "${@}"
 }
 
 function log_warning() {
-	_log "${SeverityLevel[warning]}" "${1}"
+	_log "${SeverityLevel[warning]}" "${@}"
 }
 
 function log_notice() {
-	_log "${SeverityLevel[notice]}" "${1}"
+	_log "${SeverityLevel[notice]}" "${@}"
 }
 
 function log_info() {
-	_log "${SeverityLevel[informational]}" "${1}"
+	_log "${SeverityLevel[informational]}" "${@}"
 }
 	
 function log_debug() {
-	_log "${SeverityLevel[debug]}" "${1}"
+	_log "${SeverityLevel[debug]}" "${@}"
 }
