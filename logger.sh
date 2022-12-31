@@ -122,7 +122,8 @@ function _log() {
 	shift
 	shift
 
-	unset LINE_NUMBER
+	unset LOG_SOURCE
+	unset LOG_LINE_NUMBER
 
 	while [[ ${#} -gt "0" ]]; do
 		KEY="${1}"
@@ -148,11 +149,11 @@ function _log() {
 	fi
 
 	if [ -z "${LOG_SOURCE}" ]; then
-		LOG_SOURCE=$(realpath ${BASH_SOURCE[-1]})
+		LOG_SOURCE="$(realpath ${BASH_SOURCE[-1]})"
 	fi
 
 	if [ -z "${LOG_LINE_NUMBER}" ]; then
-		LOG_LINE_NUMBER=${BASH_LINENO[-2]}
+		LOG_LINE_NUMBER="${BASH_LINENO[-2]}"
 	fi
 
 
