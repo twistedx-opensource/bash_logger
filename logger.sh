@@ -103,7 +103,7 @@ function set_debug_logfile() {
 	BASH_LOGGER_DEBUG_LOGFILE="${1}"
 }
 
-function set_base_dir() {
+function bash_logger_set_base_dir() {
 	BASH_LOGGER_BASE_DIR="${1}"
 }
 
