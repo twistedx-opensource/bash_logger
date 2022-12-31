@@ -40,6 +40,17 @@ case $(uname -s | tr '[:upper:]' '[:lower:]') in
 		;;
 esac
 
+if [ -z "${BASH_LOGGER_SESSION_ID}" ]; then
+	if [ $(command -v uuidgen | wc -l) -gt 0 ]; then
+		BASH_LOGGER_SESSION_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
+	elif [ -f "/proc/sys/kernel/random/uuid" ]; then
+		BASH_LOGGER_SESSION_ID="$(cat /proc/sys/kernel/random/uuid | tr '[:upper:]' '[:lower:]')"
+	else
+		echo "Fatal error, missing uuid generator dependency"
+		exit 1
+	fi
+fi
+
 BASH_LOGGER_EMERG_LOGFILE="/dev/null"
 BASH_LOGGER_ALERT_LOGFILE="/dev/null"
 BASH_LOGGER_CRIT_LOGFILE="/dev/null"
@@ -104,7 +115,7 @@ function bash_logger_set_debug_logfile() {
 }
 
 function bash_logger_set_base_dir() {
-	export BASH_LOGGER_BASE_DIR="${1}"
+	BASH_LOGGER_BASE_DIR="${1}"
 }
 
 function log2stdout() {
@@ -168,26 +179,28 @@ function _log() {
 		JSON_MESSAGE=$(echo "${MESSAGE} "| sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
 
 		if [ ! -z "${VERSION}" ]; then
-			JSON_STRING="{\"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"version\": \"${VERSION}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
+			JSON_STRING="{\"session\": \"${BASH_LOGGER_SESSION_ID}\", \"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"version\": \"${VERSION}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
 		else
-			JSON_STRING="{\"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
+			JSON_STRING="{\"session\": \"${BASH_LOGGER_SESSION_ID}\", \"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
 		fi
 	else
 		if [ ! -z "${VERSION}" ]; then
 			JSON_STRING=$(jq -cn \
+				--arg session "${BASH_LOGGER_SESSION_ID}" \
 				--arg level "${LEVEL}" \
 				--arg message "${MESSAGE}" \
 				--arg version "${VERSION}" \
 				--arg timestamp "${TIMESTAMP}" \
 				--arg source "${SOURCE}" \
-				'{level: $level, message: $message, version: $version, timestamp: $timestamp, source: $source}')
+				'{session: $session, level: $level, message: $message, version: $version, timestamp: $timestamp, source: $source}')
 		else
 			JSON_STRING=$(jq -cn \
+				--arg session "${BASH_LOGGER_SESSION_ID}" \
 				--arg level "${LEVEL}" \
 				--arg message "${MESSAGE}" \
 				--arg timestamp "${TIMESTAMP}" \
 				--arg source "${SOURCE}" \
-				'{level: $level, message: $message, timestamp: $timestamp, source: $source}')
+				'{session: $session, level: $level, message: $message, timestamp: $timestamp, source: $source}')
 		fi
 	fi
 
