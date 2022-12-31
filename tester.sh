@@ -32,9 +32,9 @@ VERSION="0.1.0"
 source ${SCRIPT_DIRNAME}/logger.sh
 
 function set_global_log() {
-	set_error_logfile "${SCRIPT_DIRNAME}/global.error.log"
-	set_info_logfile "${SCRIPT_DIRNAME}/global.info.log"
-	set_debug_logfile "${SCRIPT_DIRNAME}/global.debug.log"
+	bash_logger_set_error_logfile "${SCRIPT_DIRNAME}/global.error.log"
+	bash_logger_set_info_logfile "${SCRIPT_DIRNAME}/global.info.log"
+	bash_logger_set_debug_logfile "${SCRIPT_DIRNAME}/global.debug.log"
 
 	BASH_LOGGER_BASE_DIR="/Users/jason"
 
@@ -42,9 +42,9 @@ function set_global_log() {
 }
 
 function set_ui_log() {
-	set_error_logfile "${SCRIPT_DIRNAME}/ui.error.log"
-	set_info_logfile "${SCRIPT_DIRNAME}/ui.info.log"
-	set_debug_logfile "${SCRIPT_DIRNAME}/ui.debug.log"
+	bash_logger_set_error_logfile "${SCRIPT_DIRNAME}/ui.error.log"
+	bash_logger_set_info_logfile "${SCRIPT_DIRNAME}/ui.info.log"
+	bash_logger_set_debug_logfile "${SCRIPT_DIRNAME}/ui.debug.log"
 
 	BASH_LOGGER_BASE_DIR="/Users/jason/Projects/bash_logger"
 

@@ -71,35 +71,35 @@ SeverityIndex[${SeverityLevel[debug]}]=1
 
 LOG_TO_STDOUT_SEVERITY="${SeverityLevel[informational]}"
 
-function set_emergency_logfile() {
+function bash_logger_set_emergency_logfile() {
 	BASH_LOGGER_EMERG_LOGFILE="${1}"
 }
 
-function set_alert_logfile() {
+function bash_logger_set_alert_logfile() {
 	BASH_LOGGER_ALERT_LOGFILE="${1}"
 }
 
-function set_critical_logfile() {
+function bash_logger_set_critical_logfile() {
 	BASH_LOGGER_CRIT_LOGFILE="${1}"
 }
 
-function set_error_logfile() {
+function bash_logger_set_error_logfile() {
 	BASH_LOGGER_ERROR_LOGFILE="${1}"
 }
 
-function set_warn_logfile() {
+function bash_logger_set_warn_logfile() {
 	BASH_LOGGER_WARN_LOGFILE="${1}"
 }
 
-function set_notice_logfile() {
+function bash_logger_set_notice_logfile() {
 	BASH_LOGGER_NOTICE_LOGFILE="${1}"
 }
 
-function set_info_logfile() {
+function bash_logger_set_info_logfile() {
 	BASH_LOGGER_INFO_LOGFILE="${1}"
 }
 
-function set_debug_logfile() {
+function bash_logger_set_debug_logfile() {
 	BASH_LOGGER_DEBUG_LOGFILE="${1}"
 }
 
