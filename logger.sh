@@ -127,7 +127,7 @@ function log2stdout() {
 }
 
 function preprocess_json() {
-	echo "$(echo -n "${1}" | sed -z 's/\\\"/\\\\"/g' | sed -z 's/\"/\\"/g' | sed -z 's/\n/\\n/g' | sed -z 's/\r/\\r/g' | tr -dc '[:print:]\n\r\t')"
+	echo "$(echo -n "${1}" | sed -z 's/\\\"/\\\\"/g' | sed -z 's/\"/\\"/g' | tr "'" "\'" | sed -z 's/\n/\\n/g' | sed -z 's/\r/\\r/g' | tr -dc '[:print:]')"
 }
 
 function _log() {

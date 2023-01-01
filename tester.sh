@@ -46,7 +46,7 @@ function set_ui_log() {
 
 	BASH_LOGGER_BASE_DIR="/Users/jason/Projects/bash_logger"
 
-	log2stdout "INFO"
+	log2stdout 'INFO'
 }
 
 function log_global_info() {
