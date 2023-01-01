@@ -167,7 +167,7 @@ function _log() {
 				shift
 				shift;;
 			*)
-				echo "Fatal error, log command not recognized"
+				echo "Fatal error, log command line argument not recognized"
 				exit 1;;
 		esac
 	done
