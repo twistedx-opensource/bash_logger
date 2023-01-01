@@ -79,9 +79,9 @@ function log_ui_debug() {
 	log_debug "${@}"
 }
 
-log_global_debug "Enetering \"now\" \n filewatcher"
+log_global_debug "Enetering 'now' \n filewatcher"
 log_global_error "Unable to load gc"
 log_global_debug "Exiting filewatcher" -s "fakesource.sh" -l 202
 log_global_info "Here I am"
 log_ui_debug "This is my debug" --attribute "action=execute" --attribute "subject=read_logs"
-# log_ui_debug "$(cat ${0})"
+log_ui_debug "$(cat ${0})" --attribute "filename=tester.sh"

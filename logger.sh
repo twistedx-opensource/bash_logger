@@ -127,7 +127,7 @@ function log2stdout() {
 }
 
 function preprocess_json() {
-	echo "$(echo -n "${1}" | sed 's/\\\"/\\\\"/g' | sed 's/\"/\\"/g')"
+	echo "$(echo -n "${1}" | sed 's/\\\"/\\\\"/g' | sed 's/\"/\\"/g' | tr -dc '[:print:]\n\r\t')"
 }
 
 function _log() {
@@ -223,42 +223,42 @@ function _log() {
 	JSON_STRING="$(${SCRIPT_DIRNAME}/json_log_formatter.py ${ARGS})"
 	IFS="${OLD_IFS}"
 
-	case "${LEVEL}" in
-		${SeverityLevel[emergency]})
-			echo "${JSON_STRING}" >> "${BASH_LOGGER_EMERG_LOGFILE}"
-			;&
-		${SeverityLevel[alert]})
-			echo "${JSON_STRING}" >> "${BASH_LOGGER_ALERT_LOGFILE}"
-			;&
-		${SeverityLevel[critical]})
-			echo "${JSON_STRING}" >> "${BASH_LOGGER_CRIT_LOGFILE}"
-			;&
-		${SeverityLevel[error]})
-			echo "${JSON_STRING}" >> "${BASH_LOGGER_ERROR_LOGFILE}"
-			;&
-		${SeverityLevel[warning]})
-			echo "${JSON_STRING}" >> "${BASH_LOGGER_WARN_LOGFILE}"
-			;&
-		${SeverityLevel[notice]})
-			echo "${JSON_STRING}" >> "${BASH_LOGGER_NOTICE_LOGFILE}"
-			;&
-		${SeverityLevel[informational]})
-			echo "${JSON_STRING}" >> "${BASH_LOGGER_INFO_LOGFILE}"
-			;&
-		${SeverityLevel[debug]})
-			echo "${JSON_STRING}" >> "${BASH_LOGGER_DEBUG_LOGFILE}"
-			;;
-		*)
-			echo "Critical Error, \"${LEVEL}\" is not a valid log severity level"
-			exit 1
-			;;
-	esac
+	# case "${LEVEL}" in
+	# 	${SeverityLevel[emergency]})
+	# 		echo "${JSON_STRING}" >> "${BASH_LOGGER_EMERG_LOGFILE}"
+	# 		;&
+	# 	${SeverityLevel[alert]})
+	# 		echo "${JSON_STRING}" >> "${BASH_LOGGER_ALERT_LOGFILE}"
+	# 		;&
+	# 	${SeverityLevel[critical]})
+	# 		echo "${JSON_STRING}" >> "${BASH_LOGGER_CRIT_LOGFILE}"
+	# 		;&
+	# 	${SeverityLevel[error]})
+	# 		echo "${JSON_STRING}" >> "${BASH_LOGGER_ERROR_LOGFILE}"
+	# 		;&
+	# 	${SeverityLevel[warning]})
+	# 		echo "${JSON_STRING}" >> "${BASH_LOGGER_WARN_LOGFILE}"
+	# 		;&
+	# 	${SeverityLevel[notice]})
+	# 		echo "${JSON_STRING}" >> "${BASH_LOGGER_NOTICE_LOGFILE}"
+	# 		;&
+	# 	${SeverityLevel[informational]})
+	# 		echo "${JSON_STRING}" >> "${BASH_LOGGER_INFO_LOGFILE}"
+	# 		;&
+	# 	${SeverityLevel[debug]})
+	# 		echo "${JSON_STRING}" >> "${BASH_LOGGER_DEBUG_LOGFILE}"
+	# 		;;
+	# 	*)
+	# 		echo "Critical Error, \"${LEVEL}\" is not a valid log severity level"
+	# 		exit 1
+	# 		;;
+	# esac
 
-	if [ ! -z "${LOG_TO_STDOUT}" ]; then
-		if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
-			printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "${MESSAGE}"
-		fi
-	fi
+	# if [ ! -z "${LOG_TO_STDOUT}" ]; then
+	# 	if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
+	# 		printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "${MESSAGE}"
+	# 	fi
+	# fi
 }
 
 function log_emergency() {
