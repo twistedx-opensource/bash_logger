@@ -128,8 +128,6 @@ function log2stdout() {
 
 function preprocess_json() {
 	echo "$(echo -n "${1}" | sed 's/\\\"/\\\\"/g' | sed 's/\"/\\"/g')"
-	# echo "$(echo -n "${1}" | sed 's/\"/\\"/g')"
-	# echo $(echo "${1}" | sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
 }
 
 function _log() {
