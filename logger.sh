@@ -2,7 +2,7 @@
 
 # MIT License
 
-# Copyright (c) 2022 jscheunemann
+# Copyright (c) 2022-2023 Jason Scheunemann <jason.scheunemann@gmail.com>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -124,7 +124,13 @@ function log2stdout() {
 	if [ ! -z "${1}" ]; then
 		LOG_TO_STDOUT_SEVERITY="${1}"
 	fi
-} 
+}
+
+function preprocess_json() {
+	echo "$(echo -n "${1}" | sed 's/\\\"/\\\\"/g' | sed 's/\"/\\"/g')"
+	# echo "$(echo -n "${1}" | sed 's/\"/\\"/g')"
+	# echo $(echo "${1}" | sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
+}
 
 function _log() {
 	LEVEL="${1}"
@@ -135,6 +141,7 @@ function _log() {
 
 	unset LOG_SOURCE
 	unset LOG_LINE_NUMBER
+	unset PROCESS_ID
 
 	while [[ ${#} -gt "0" ]]; do
 		KEY="${1}"
@@ -147,6 +154,10 @@ function _log() {
 
 			-l | --line-number)
 				LOG_LINE_NUMBER="${2}"
+				shift
+				shift;;
+			-p | --pid)
+				PROCESS_ID="${2}"
 				shift
 				shift;;
 			*)
@@ -167,42 +178,45 @@ function _log() {
 		LOG_LINE_NUMBER="${BASH_LINENO[-2]}"
 	fi
 
+	if [ -z "${PROCESS_ID}" ]; then
+		PROCESS_ID="${$}"
+	fi
+
 
 	TIMESTAMP="$(${DATE_CMD} "+%Y-%m-%dT%H:%M:%S.%3N%z")"
 	SOURCE="${LOG_SOURCE}:${LOG_LINE_NUMBER}"
+
+
+	LEVEL=$(preprocess_json "${LEVEL}")
+	MESSAGE=$(preprocess_json "${MESSAGE}")
+	TIMESTAMP=$(preprocess_json "${TIMESTAMP}")
 
 	if [ $(echo ${SOURCE} | grep -c "^${BASH_LOGGER_BASE_DIR}") -gt 0 ]; then
 		SOURCE="$(echo ${SOURCE} | sed "s|^${BASH_LOGGER_BASE_DIR}||g" | sed "s|^/||g")"
 	fi
 
-	if [ $(command -v jq | wc -l) -eq 0 ]; then
-		JSON_MESSAGE=$(echo "${MESSAGE} "| sed -E 's/([^\]|^)"/\1\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\\n//g' | xargs)
+	declare -A JSON_STR
+	JSON_STR[session]="${BASH_LOGGER_SESSION_ID}"
+	JSON_STR[pid]="${PROCESS_ID}"
+	JSON_STR[level]="${LEVEL}"
+	JSON_STR[message]="${MESSAGE}"
+	JSON_STR[timestamp]="${TIMESTAMP}"
+	JSON_STR[source]="${SOURCE}"
 
-		if [ ! -z "${VERSION}" ]; then
-			JSON_STRING="{\"session\": \"${BASH_LOGGER_SESSION_ID}\", \"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"version\": \"${VERSION}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
-		else
-			JSON_STRING="{\"session\": \"${BASH_LOGGER_SESSION_ID}\", \"level\": \"${LEVEL}\", \"message\": \"${JSON_MESSAGE}\", \"timestamp\": \"${TIMESTAMP}\", \"source\": \"${SOURCE}\"}"
-		fi
-	else
-		if [ ! -z "${VERSION}" ]; then
-			JSON_STRING=$(jq -cn \
-				--arg session "${BASH_LOGGER_SESSION_ID}" \
-				--arg level "${LEVEL}" \
-				--arg message "${MESSAGE}" \
-				--arg version "${VERSION}" \
-				--arg timestamp "${TIMESTAMP}" \
-				--arg source "${SOURCE}" \
-				'{session: $session, level: $level, message: $message, version: $version, timestamp: $timestamp, source: $source}')
-		else
-			JSON_STRING=$(jq -cn \
-				--arg session "${BASH_LOGGER_SESSION_ID}" \
-				--arg level "${LEVEL}" \
-				--arg message "${MESSAGE}" \
-				--arg timestamp "${TIMESTAMP}" \
-				--arg source "${SOURCE}" \
-				'{session: $session, level: $level, message: $message, timestamp: $timestamp, source: $source}')
-		fi
+
+	ARGS="$(for x in "${!JSON_STR[@]}"; do printf "\"%s\" \"%s\" " "${x}" "${JSON_STR[${x}]}" ; done)"
+
+	JSON_PROCESSOR_ARGS="\"session=${BASH_LOGGER_SESSION_ID}\" \"pid=${PROCESS_ID}\" \"level=${LEVEL}\" \"message=${MESSAGE}\" \"timestamp=${TIMESTAMP}\" \"source=${SOURCE}\""
+
+	if [ ! -z "${VERSION}" ]; then
+		VERSION=$(preprocess_json "${VERSION}")
+		JSON_PROCESSOR_ARGS="${JSON_PROCESSOR_ARGS} \"version=${VERSION}\""
 	fi
+
+	OLD_IFS="${IFS}"
+	IFS="^z"
+	JSON_STRING="$(${SCRIPT_DIRNAME}/json_log_formatter.py ${ARGS})"
+	IFS="${OLD_IFS}"
 
 	case "${LEVEL}" in
 		${SeverityLevel[emergency]})
@@ -235,11 +249,13 @@ function _log() {
 			;;
 	esac
 
-	if [ ! -z "${LOG_TO_STDOUT}" ]; then
-		if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
-			printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "${MESSAGE}"
-		fi
-	fi
+	printf "%-8s%s => %s\n" "${MESSAGE}"
+
+	# if [ ! -z "${LOG_TO_STDOUT}" ]; then
+	# 	if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
+	# 		printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "${MESSAGE}"
+	# 	fi
+	# fi
 }
 
 function log_emergency() {

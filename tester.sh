@@ -2,7 +2,7 @@
 
 # MIT License
 
-# Copyright (c) 2022 jscheunemann
+# Copyright (c) 2022-2023 Jason Scheunemann <jason.scheunemann@gmail.com>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,6 @@ function set_global_log() {
 	bash_logger_set_error_logfile "${SCRIPT_DIRNAME}/global.error.log"
 	bash_logger_set_info_logfile "${SCRIPT_DIRNAME}/global.info.log"
 	bash_logger_set_debug_logfile "${SCRIPT_DIRNAME}/global.debug.log"
-
-	BASH_LOGGER_BASE_DIR="/Users/jason"
 
 	log2stdout "DEBUG"
 }
@@ -81,9 +79,9 @@ function log_ui_debug() {
 	log_debug "${@}"
 }
 
-log_global_debug "Enetering filewatcher"
-log_global_error "Unable to load gc"
-log_global_debug "Exiting filewatcher" -s "fakesource.sh" -l 202
-log_global_info "Here I am"
-log_ui_debug "This is my debug"
-log_ui_debug "The contents of ${0}: $(cat ${0})"
+# log_global_debug "Enetering \"now\" \n filewatcher"
+# log_global_error "Unable to load gc"
+# log_global_debug "Exiting filewatcher" -s "fakesource.sh" -l 202
+# log_global_info "Here I am"
+# log_ui_debug "This is my debug"
+log_ui_debug "$(cat ${0})"
