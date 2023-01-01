@@ -143,6 +143,8 @@ function _log() {
 	unset LOG_LINE_NUMBER
 	unset PROCESS_ID
 
+	declare -A JSON_STR
+
 	while [[ ${#} -gt "0" ]]; do
 		KEY="${1}"
 
@@ -158,6 +160,12 @@ function _log() {
 				shift;;
 			-p | --pid)
 				PROCESS_ID="${2}"
+				shift
+				shift;;
+			-a | --attribute)
+				_KEY="$(echo "${2}" | cut -d= -f1)"
+				_VAL="$(echo "${2}" | cut -d= -f2-)"
+				JSON_STR[${_KEY}]="$(preprocess_json "${_VAL}")"
 				shift
 				shift;;
 			*)
@@ -187,15 +195,14 @@ function _log() {
 	SOURCE="${LOG_SOURCE}:${LOG_LINE_NUMBER}"
 
 
-	LEVEL=$(preprocess_json "${LEVEL}")
-	MESSAGE=$(preprocess_json "${MESSAGE}")
-	TIMESTAMP=$(preprocess_json "${TIMESTAMP}")
+	LEVEL="$(preprocess_json "${LEVEL}")"
+	MESSAGE="$(preprocess_json "${MESSAGE}")"
+	TIMESTAMP="$(preprocess_json "${TIMESTAMP}")"
 
 	if [ $(echo ${SOURCE} | grep -c "^${BASH_LOGGER_BASE_DIR}") -gt 0 ]; then
 		SOURCE="$(echo ${SOURCE} | sed "s|^${BASH_LOGGER_BASE_DIR}||g" | sed "s|^/||g")"
 	fi
 
-	declare -A JSON_STR
 	JSON_STR[session]="${BASH_LOGGER_SESSION_ID}"
 	JSON_STR[pid]="${PROCESS_ID}"
 	JSON_STR[level]="${LEVEL}"
@@ -249,13 +256,11 @@ function _log() {
 			;;
 	esac
 
-	printf "%-8s%s => %s\n" "${MESSAGE}"
-
-	# if [ ! -z "${LOG_TO_STDOUT}" ]; then
-	# 	if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
-	# 		printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "${MESSAGE}"
-	# 	fi
-	# fi
+	if [ ! -z "${LOG_TO_STDOUT}" ]; then
+		if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
+			printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "${MESSAGE}"
+		fi
+	fi
 }
 
 function log_emergency() {
