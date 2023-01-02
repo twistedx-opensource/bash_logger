@@ -40,7 +40,11 @@ for line in lines:
 	filename = j.get("filename")
 	level = j.get("level")
 	source = j.get("source")
-	message = j.get("message").replace("\\\\n", ">><<|>><<n").replace("\\n", "\n").replace(">><<|>><<n", "\\n").replace("\\r", "\r").replace("\\t", "\t").replace("\\'", "'").replace('\\"', '"')
+	message = j.get("message")
+
+	message = re.sub(r'\\\\([abtnvfre"])', r'>><<>><\1', message)
+	message = message.replace("\\n", "\n").replace(">><<|>><<n", "\\n").replace("\\r", "\r").replace("\\t", "\t").replace("\\'", "'").replace('\\"', '"')
+	message = re.sub(r'>><<>><([abtnvfre"])', r'\\\1', message)
 
 	if filename:
 		message = f"Contents of \"{filename}\":\n{message}"

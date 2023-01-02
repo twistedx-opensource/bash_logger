@@ -130,14 +130,14 @@ function preprocess_json() {
 	local bs="\\"
 	local sq=\'
 	local dq=\"
-	echo "$(echo -n "${1}" | sed -z "s/'${sq}'/\\'/g" | sed -z "s/${dq}/${bs}${bs}${dq}/g" | sed -z 's/\\n/>><<|>><<n/g' | sed -z 's/\n/\\\\n/g' | sed -z 's/>><<|>><<n/\\\\\\\\n/g' | sed -z 's/\r/\\r/g' | sed -z 's/\t/\\t/g' | tr -dc '[:print:]')"
+	echo "$(echo -n "${1}" | sed -r 's/\\([abtnvfre\"])/>><<>><<\1/g' | sed -z "s/${bs}${bs}${sq}/>><<>><<${sq}/g" | sed -z "s/${dq}/${bs}${bs}${dq}/g" | sed -z "s/${bs}${bs}${bs}${bs}${dq}/${bs}${bs}${bs}${bs}${bs}${bs}${dq}/g" | sed -z 's/\n/\\\\n/g' | sed -z 's/\r/\\r/g' | sed -z 's/\t/\\t/g' | sed -z "s/>><<>><<${sq}/${bs}${bs}${bs}${bs}${bs}${bs}${bs}${bs}${sq}/g" | sed -r 's/>><<>><<([abtnvfre\"])/\\\\\\\\\1/g' | tr -dc '[:print:]\t\n\r')"
 }
 
 function json_postprocess() {
 	local bs="\\"
 	local sq=\'
 	local dq=\"
-	echo "$(echo -n "${1}" | sed -z "s/${bs}${bs}${sq}/${sq}/g" | sed -z "s/${bs}${bs}${dq}/${dq}/g" | sed -z 's/\\\\\\\\n/>><<|>><<n/g' | sed -z 's/\\\\n/\n/g' | sed -z 's/>><<|>><<n/\\\\n/g')"
+	echo "$(echo -n "${1}" | sed -r 's/\\\\\\\\([abtnvfre\"])/>><<>><<\1/g' | sed -z "s/${bs}${bs}${bs}${bs}${sq}/${sq}/g" | sed -z "s/${bs}${bs}${dq}/${dq}/g" | sed -z "s/${bs}${bs}${bs}${bs}${bs}${bs}${dq}/${bs}${dq}/g" | sed -z 's/\\\\n/\n/g' | sed -r 's/>><<>><<([abtnvfre\"])/\\\\\1/g')"
 }
 
 function _log() {
