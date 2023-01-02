@@ -23,6 +23,7 @@
 # SOFTWARE.
 
 import json
+import re
 import sys
 
 log_file = str(sys.argv[1])
@@ -36,8 +37,12 @@ for line in lines:
 	j = json.loads(line)
 	uuid = j.get("session")
 	timestamp = j.get("timestamp")
+	filename = j.get("filename")
 	level = j.get("level")
 	source = j.get("source")
-	message = j.get("message")
+	message = j.get("message").replace("\\\\n", ">><<|>><<n").replace("\\n", "\n").replace(">><<|>><<n", "\\n").replace("\\r", "\r").replace("\\t", "\t").replace("\\'", "'").replace('\\"', '"')
+
+	if filename:
+		message = f"Contents of \"{filename}\":\n{message}"
 
 	print(f"{timestamp} {level: <8} {source} => {message}")

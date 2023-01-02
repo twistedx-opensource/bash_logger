@@ -127,7 +127,17 @@ function log2stdout() {
 }
 
 function preprocess_json() {
-	echo "$(echo -n "${1}" | sed -z 's/\\\"/\\\\"/g' | sed -z 's/\"/\\"/g' | tr "'" "\'" | sed -z 's/\n/\\n/g' | sed -z 's/\r/\\r/g' | tr -dc '[:print:]')"
+	local bs="\\"
+	local sq=\'
+	local dq=\"
+	echo "$(echo -n "${1}" | sed -z "s/'${sq}'/\\'/g" | sed -z "s/${dq}/${bs}${bs}${dq}/g" | sed -z 's/\\n/>><<|>><<n/g' | sed -z 's/\n/\\\\n/g' | sed -z 's/>><<|>><<n/\\\\\\\\n/g' | sed -z 's/\r/\\r/g' | sed -z 's/\t/\\t/g' | tr -dc '[:print:]')"
+}
+
+function json_postprocess() {
+	local bs="\\"
+	local sq=\'
+	local dq=\"
+	echo "$(echo -n "${1}" | sed -z "s/${bs}${bs}${sq}/${sq}/g" | sed -z "s/${bs}${bs}${dq}/${dq}/g" | sed -z 's/\\\\\\\\n/>><<|>><<n/g' | sed -z 's/\\\\n/\n/g' | sed -z 's/>><<|>><<n/\\\\n/g')"
 }
 
 function _log() {
@@ -188,14 +198,12 @@ function _log() {
 		PROCESS_ID="${$}"
 	fi
 
-
 	TIMESTAMP="$(${DATE_CMD} "+%Y-%m-%dT%H:%M:%S.%3N%z")"
 	SOURCE="${LOG_SOURCE}:${LOG_LINE_NUMBER}"
 
-
-	LEVEL="$(preprocess_json "${LEVEL}")"
+	LEVEL="${LEVEL}"
 	MESSAGE="$(preprocess_json "${MESSAGE}")"
-	TIMESTAMP="$(preprocess_json "${TIMESTAMP}")"
+	TIMESTAMP="${TIMESTAMP}"
 
 	if [ $(echo ${SOURCE} | grep -c "^${BASH_LOGGER_BASE_DIR}") -gt 0 ]; then
 		SOURCE="$(echo ${SOURCE} | sed "s|^${BASH_LOGGER_BASE_DIR}||g" | sed "s|^/||g")"
@@ -208,21 +216,13 @@ function _log() {
 	JSON_STR[timestamp]="${TIMESTAMP}"
 	JSON_STR[source]="${SOURCE}"
 
-
 	ARGS="$(for x in "${!JSON_STR[@]}"; do
-		printf "\"%s\" \"%s\" " "${x}" "${JSON_STR[${x}]}"
+		printf "\"%s\":\"%s\"," "${x}" "${JSON_STR[${x}]}"
 	done)"
 
-	JSON_PROCESSOR_ARGS="\"session=${BASH_LOGGER_SESSION_ID}\" \"pid=${PROCESS_ID}\" \"level=${LEVEL}\" \"message=${MESSAGE}\" \"timestamp=${TIMESTAMP}\" \"source=${SOURCE}\""
-
-	if [ ! -z "${VERSION}" ]; then
-		VERSION=$(preprocess_json "${VERSION}")
-		JSON_PROCESSOR_ARGS="${JSON_PROCESSOR_ARGS} \"version=${VERSION}\""
-	fi
-
 	OLD_IFS="${IFS}"
-	IFS="^z"
-	JSON_STRING="$(${SCRIPT_DIRNAME}/json_log_formatter.py ${ARGS})"
+	IFS=""
+	JSON_STRING="{${ARGS::-1}}"
 	IFS="${OLD_IFS}"
 
 	case "${LEVEL}" in
@@ -258,7 +258,7 @@ function _log() {
 
 	if [ ! -z "${LOG_TO_STDOUT}" ]; then
 		if [ "${SeverityIndex[${LEVEL}]}" -ge "${SeverityIndex[${LOG_TO_STDOUT_SEVERITY}]}" ]; then
-			printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "${MESSAGE}"
+			echo -e "$(printf "%-8s%s => %s\n" "${LEVEL}" "${SOURCE}" "$(json_postprocess "${MESSAGE}")")"
 		fi
 	fi
 }
